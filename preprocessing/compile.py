@@ -1,11 +1,11 @@
 from os import path
 
 prefix = "/usr/bin/clang -fdiagnostics-color=always -g"
-directory = "/Users/jasminewu/Documents/6115/II/processing/"
+directory = "/Users/jasminewu/Documents/6115/II/Spoken_Digits/preprocessing/"
 
 files = ["fft4g"]
 
-suffix = "-o /Users/jasminewu/Documents/6115/II/processing/"
+suffix = "-o /Users/jasminewu/Documents/6115/II/Spoken_Digits/preprocessing/"
 
 # MAIN
 files.append("main")
