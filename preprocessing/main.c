@@ -28,11 +28,6 @@ int main()
     printf("\n");
     double spectogram[spect_time * spect_y];
     stft(frame, spectogram);
-
-    int i;
-    for (i = 0; i < spect_y; i++) {
-        printf("%f\n", spectogram[i]);
-    }
 }
 
 
@@ -82,17 +77,17 @@ void stft(double audio[audio_length], double spectogram[spect_time * spect_y]) {
     double log_max = log10(max_val);
 
     double new_val;
-    double sum;     // to calculate mean after
+    double sum = 0;     // to calculate mean after
     for (i = 0; i < total_length; i++) {
         val = spectogram[i];
         if (val < amin) val = amin;
-
+        printf("%f\n", val);
         new_val = log10(val) - log_max;
+        printf("%f\n", new_val);
         sum = sum + new_val;
 
         spectogram[i] = new_val;
     }
-
     double mean = sum / total_length;
     
     // calculate std of spectogram
@@ -106,5 +101,8 @@ void stft(double audio[audio_length], double spectogram[spect_time * spect_y]) {
         val = spectogram[i];
         spectogram[i] = (val - mean) / std;
     }
-}
 
+    // for (i = 0; i < total_length; i++) {
+    //     printf("%f, ", spectogram[i]);
+    // }
+}
