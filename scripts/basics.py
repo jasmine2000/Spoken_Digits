@@ -19,6 +19,13 @@ def get_max_length(X_unfiltered):
     max_length = int(np.floor(max_length_1 / 256) * 256)
     return max_length
 
+def get_max_length2(X_unfiltered, std):
+    X_lengths = [audio.shape[0] for _, audio in X_unfiltered]
+
+    max_length_1 = int(np.mean(X_lengths) + std * np.std(X_lengths))
+    max_length = int(np.floor(max_length_1 / 256) * 256)
+    return max_length
+
 # https://www.tensorflow.org/tutorials/audio/simple_audio
 def decode_audio(file_path):
     # read file to get buffer                                                                                               
