@@ -55,15 +55,15 @@ def get_label(file_path):
 def spect(signal, max_length):
     range_val = int(max_length/256)
 
-    spectogram = []
+    spectrogram = []
     for i in range(range_val):
         window_fft = np.fft.rfft(signal[i * 256: (i + 1) * 256])[:-1]
         window_fft = list(np.abs(window_fft))
-        spectogram.append(window_fft)
-    spectogram = np.array(spectogram)
-    spectogram = librosa.amplitude_to_db(spectogram, ref=np.max)
-    spectogram = spectogram / 20
-    return spectogram
+        spectrogram.append(window_fft)
+    spectrogram = np.array(spectrogram)
+    spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
+    spectrogram = spectrogram / 20
+    return spectrogram
 
 def normalize_arr(array):
     mean = np.mean(array)
