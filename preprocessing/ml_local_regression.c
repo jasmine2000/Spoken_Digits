@@ -53,15 +53,6 @@
 #include MTB_ML_INCLUDE_MODEL_Y_DATA_FILE(MODEL_NAME)
 
 /*******************************************************************************
-* Typedefs
-*******************************************************************************/
-
-/*******************************************************************************
-* Constants
-*******************************************************************************/
-#define SUCCESS_RATE       98.0f
-
-/*******************************************************************************
 * Global Variables
 *******************************************************************************/
 /* NN Model Object */
@@ -73,26 +64,10 @@ static MTB_ML_DATA_T *result_buffer;
 /* Model Output Size */
 static uint32_t model_output_size;
 
-/*******************************************************************************
-* Local Functions
-*******************************************************************************/
 
-/*******************************************************************************
-* Function Name: nn_profiler_init
-********************************************************************************
-* Summary:
-*   Initialize the Neural Network based on the given model and setup to start
-*   regression of the model and profiling configuration.
-*
-* Parameters:
-*   profile_cfg: profiling configuration
-*   model_bin: pointer to the model data
-*
-* Return:
-*   The status of the initialization.
-*******************************************************************************/
 cy_rslt_t ml_local_regression_init(mtb_ml_profile_config_t profile_cfg,
                                    mtb_ml_model_bin_t *model_bin)
+// initialize model, allocate space for result, and print out model info
 {
     cy_rslt_t result;
 
@@ -127,11 +102,12 @@ cy_rslt_t ml_local_regression_init(mtb_ml_profile_config_t profile_cfg,
 }
 
 
-void ml_task(float spectogram[2816]) {
-	int16_t spectogram_bits[2816];
-	mtb_ml_utils_convert_flt_to_int16(spectogram, spectogram_bits, 2816, 3.13);
+void ml_task(float spectrogram[2816]) {
+    // given spectrogram, convert to int16 and run through model
+	int16_t spectrogram_bits[2816];
+	mtb_ml_utils_convert_flt_to_int16(spectrogram, spectrogram_bits, 2816, 3.13);
 
-	MTB_ML_DATA_T *in_buff = spectogram_bits;
+	MTB_ML_DATA_T *in_buff = spectrogram_bits;
 	cy_rslt_t msg = mtb_ml_model_set_input_q_fraction_bits(model_obj, 3.13);
 
 	mtb_ml_model_run(model_obj, in_buff, result_buffer);
@@ -142,110 +118,4 @@ void ml_task(float spectogram[2816]) {
 
 	i = mtb_ml_utils_find_max(result_buffer, model_output_size);
 	printf("max: %d\r\n", i);
-
 }
-
-/*******************************************************************************
-* Function Name: ml_local_regression_task
-********************************************************************************
-* Summary:
-*   Run the Neural Network Inference Engine based on the regression data.
-*
-* Return:
-*   The status of the task execution.
-*******************************************************************************/
-//cy_rslt_t ml_local_regression_task(void)
-//{
-//    /* Regression pointers */
-//    MTB_ML_DATA_T  *input_reference;
-//    int32_t        *output_reference;
-//
-//    uint32_t     num_loop;
-//    uint32_t     input_size;
-//    uint32_t     correct_result = 0;
-//    bool         test_result;
-//    uint32_t     total_count = 0;
-//
-//    /* Point to regression data */
-//    input_reference  = (MTB_ML_DATA_T *) MTB_ML_MODEL_X_DATA_BIN(MODEL_NAME);
-//    output_reference = (int32_t *) MTB_ML_MODEL_Y_DATA_BIN(MODEL_NAME);
-//
-//    /* Get the number of loops for this regression */
-//    num_loop = *((int *) input_reference);
-//    input_reference += (sizeof(int)/sizeof(MTB_ML_DATA_T));
-//
-//    /* Get the number of inputs of the NN */
-//    input_size = *((int *) input_reference);
-//    input_reference += (sizeof(int)/sizeof(MTB_ML_DATA_T));
-//
-//    /* If using Fixed-point, get the Q value */
-//#if !COMPONENT_ML_FLOAT32
-//    uint32_t q_format = *((int *) input_reference);
-//    input_reference += (sizeof(int)/sizeof(MTB_ML_DATA_T));
-//
-//    mtb_ml_model_set_input_q_fraction_bits(model_obj, q_format);
-//#endif
-//
-//    if (input_size != mtb_ml_model_get_input_size(model_obj))
-//    {
-//        printf("Input buffer size error, input size=%d, model input size=%d, aborting...\r\n",
-//                (int) input_size, (int) mtb_ml_model_get_input_size(model_obj));
-//        return MTB_ML_RESULT_MISMATCH_DATA_TYPE;
-//    }
-//
-//    /* The following loop runs for number of examples used in regression */
-//    for (int j = 0; j < num_loop; j++)
-//    {
-//        mtb_ml_model_run(model_obj, input_reference, result_buffer);
-//
-//        /* Check if the results are accurate enough */
-//        if (mtb_ml_utils_find_max(result_buffer, model_output_size) ==
-//            mtb_ml_utils_find_max_int32(output_reference, model_output_size))
-//        {
-//            correct_result++;
-//        }
-//
-//        /* Increment buffers */
-//        input_reference  += input_size;
-//        output_reference += mtb_ml_model_get_output_size(model_obj);
-//
-//        total_count++;
-//    }
-//
-//    /* Print PASS or FAIL with Accuracy percentage
-//     * Only for regression ... */
-//    {
-//        float success_rate;
-//        char pass[] = "PASS";
-//        char fail[] = "FAIL";
-//
-//        /* Check if total count is different than ZERO */
-//        if (total_count == 0)
-//        {
-//            success_rate = 0;
-//        }
-//        else
-//        {
-//            success_rate = correct_result * 100.0f / total_count;
-//        }
-//
-//
-//        test_result = (success_rate >= SUCCESS_RATE);
-//
-//        mtb_ml_model_profile_log(model_obj);
-//
-//        printf("\r\n***************************************************\r\n");
-//        if (test_result == true)
-//        {
-//            printf("%s with accuracy percentage =%3.2f, total_cnt=%d", pass, success_rate, (int) total_count);
-//        }
-//        else
-//        {
-//            printf("%s with accuracy percentage =%3.2f, total_cnt=%d", fail, success_rate, (int) total_count);
-//        }
-//        printf("\r\n***************************************************\r\n");
-//    }
-//
-//    return CY_RSLT_SUCCESS;
-//}
-

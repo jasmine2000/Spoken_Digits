@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
-#include <fft4g_h.h>
+#include "fft4g_h.h"
+#include "spectrogram.h"
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
@@ -13,7 +14,6 @@
 #endif
 
 #define audio_length 5632
-// #define audio_length 256
 #define frame_size 256
 
 const int spect_time = audio_length / frame_size; // 22
@@ -21,11 +21,8 @@ const int spect_y = frame_size / 2; // 128
 
 double frame[256];
 
-inline int16_t double_to_fixed(double input) {
-	return (int16_t)(round(input * (1 << 13)));
-}
 
-void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
+void stft(double audio[audio_length], float spectrogram[spect_time * spect_y]) {
     // does simplified stft
     // no overlap
     // no windowing function
@@ -71,7 +68,7 @@ void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
                 max_val = val;
             }
 
-            spectogram[start_spect + j] = (float) val;
+            spectrogram[start_spect + j] = (float) val;
         }
     }
 
@@ -80,7 +77,7 @@ void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
 
     int i2 = (spect_time - thrown_out) * 256;
     for (i = i2; i < total_length; i++) {
-    	spectogram[i] = amin;
+    	spectrogram[i] = amin;
     }
 
     float new_val;
@@ -93,7 +90,7 @@ void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
         temp_sum = 0;
         i_start = i * spect_y;
 		for (j = 1; j < spect_y; j++) {
-			val = spectogram[i_start + j];
+			val = spectrogram[i_start + j];
 
 			if (val < amin || val != val) val = amin;			// if zero or nan
 
@@ -101,7 +98,7 @@ void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
 
 			if (new_val < -80) new_val = -80;
 
-			spectogram[i_start + j] = new_val;
+			spectrogram[i_start + j] = new_val;
 			temp_sum = temp_sum + new_val;
 		}
 		temp_mean = (float) (temp_sum / spect_y);
@@ -109,15 +106,15 @@ void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
 	}
     mean = mean / spect_time;
 
-    // calculate std of spectogram
+    // calculate std of spectrogram
     double sum = 0;
     for (i = 0; i < total_length; i++) {
-        sum = sum + fabs(spectogram[i] - mean) / total_length;
+        sum = sum + fabs(spectrogram[i] - mean) / total_length;
     }
     float std = (float) sqrt(sum);
 
     for (i = 0; i < total_length; i++) {
-        val = (spectogram[i] - mean) / std;
-        spectogram[i] = val;
+        val = (spectrogram[i] - mean) / std;
+        spectrogram[i] = val;
     }
 }

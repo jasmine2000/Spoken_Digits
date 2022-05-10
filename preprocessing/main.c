@@ -51,7 +51,7 @@
 #include "mtb_ml_stream.h"
 #include "ml_local_regression.h"
 
-#include "spectogram.h"
+#include "spectrogram.h"
 
 #include MTB_ML_INCLUDE_MODEL_FILE(MODEL_NAME)
 
@@ -96,7 +96,7 @@ volatile bool pdm_pcm_flag = true;
 
 /* Volume variables */
 uint32_t volume = 0;
-uint32_t noise_threshold = THRESHOLD_HYSTERESIS;
+const uint32_t noise_threshold = 8;
 
 /* HAL Object */
 cyhal_pdm_pcm_t pdm_pcm;
@@ -118,36 +118,16 @@ const cyhal_pdm_pcm_cfg_t pdm_pcm_cfg =
 #define arr_length 5632
 #define spect_length 2816
 
-
 int recording_index;
 int state;
 int pressed;	// button
 
-//MTB_ML_DATA_T *result_buffer;
-
 float *spectogram;
 double *voice_record;
 
-/*******************************************************************************
-* Function Name: main
-********************************************************************************
-* Summary:
-* This is the main function for CM4 CPU. It does...
-*    1. Initializes the BSP.
-*    2. Prints welcome message
-*    3. Initialize the regression unit - stream or local
-*    4. Run the regression
-*
-* Parameters:
-*  void
-*
-* Return:
-*  int
-*
-*******************************************************************************/
+
 int main(void)
 {
-
     cy_rslt_t result;
     int16_t audio_frame[FRAME_SIZE] = {0};
 
@@ -171,7 +151,6 @@ int main(void)
 	/* Initialize ML model */
 	mtb_ml_model_bin_t model_bin = {MTB_ML_MODEL_BIN_DATA(MODEL_NAME)};
 	result = ml_local_regression_init(PROFILE_CONFIGURATION, &model_bin);
-//	result_buffer = (MTB_ML_DATA_T *) malloc(16);
 	printf("result: %lu", result);
 	if (result == CY_RSLT_SUCCESS) printf("Successfully initialized model.");
 
@@ -192,7 +171,6 @@ int main(void)
 
 	pressed = 0;
 	recording_index = 0;
-	noise_threshold = 8;
 
 	voice_record = (double *) malloc(arr_length);
 
@@ -218,9 +196,7 @@ int main(void)
 					volume += abs(audio_frame[index]);
 					voice_record[recording_index * FRAME_SIZE + index] = abs(audio_frame[index]);
 				}
-
 			}
-
 
 			/* Turn ON the LED when the volume is higher than the threshold */
 			if ((volume/VOLUME_RATIO) > noise_threshold || state == recording)
@@ -260,15 +236,9 @@ int main(void)
 
 			spectogram = (float *) malloc(spect_length);
 			stft(voice_record, spectogram);
-
-//			for (i = 0; i < 10; i++) {
-//				printf("%f\r\n", spectogram[i]);
-//			}
-
 			free(voice_record);
 
 			ml_task(spectogram);
-
 			free(spectogram);
 
 			recording_index = 0;

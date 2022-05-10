@@ -4,4 +4,4 @@
 
 #define total_length 2816
 
-void stft(double audio[audio_length], float spectogram[total_length]);
+void stft(double audio[audio_length], float spectrogram[total_length]);
