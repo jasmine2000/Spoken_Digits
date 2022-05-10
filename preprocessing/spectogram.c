@@ -21,6 +21,9 @@ const int spect_y = frame_size / 2; // 128
 
 double frame[256];
 
+inline int16_t double_to_fixed(double input) {
+	return (int16_t)(round(input * (1 << 13)));
+}
 
 void stft(double audio[audio_length], float spectogram[spect_time * spect_y]) {
     // does simplified stft
